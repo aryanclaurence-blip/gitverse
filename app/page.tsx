@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function App() {
@@ -11,9 +13,9 @@ export default function App() {
 
   const [history, setHistory] = useState([
     "🚀 Welcome to GitVerse",
-    "Type git commands to play.",
+    "Learn Git like a real game.",
     "",
-    "Available Commands:",
+    "Commands:",
     "git init",
     "git status",
     "git commit",
@@ -39,15 +41,15 @@ export default function App() {
 
   const [streak, setStreak] = useState(0);
 
+  const [stashCount, setStashCount] =
+    useState(0);
+
   const [activeBranch, setActiveBranch] =
     useState("main");
 
   const [branches, setBranches] = useState([
     "main",
   ]);
-
-  const [stashCount, setStashCount] =
-    useState(0);
 
   const [mergeConflict, setMergeConflict] =
     useState(false);
@@ -63,10 +65,10 @@ export default function App() {
     {
       id: 1,
       x: 100,
-      y: 150,
+      y: 170,
       branch: "main",
-      message: "Initial Commit",
       color: "bg-cyan-400",
+      message: "Initial Commit",
     },
   ]);
 
@@ -80,20 +82,24 @@ export default function App() {
         title: "Initialize Repository",
         unlocked: false,
       },
+
       {
-        title: "First Commit",
+        title: "Create First Commit",
         unlocked: false,
       },
+
       {
-        title: "Created Branch",
+        title: "Create Branch",
         unlocked: false,
       },
+
       {
-        title: "Merged Branch",
+        title: "Merge Branch",
         unlocked: false,
       },
+
       {
-        title: "Used Stash",
+        title: "Use Git Stash",
         unlocked: false,
       },
     ]);
@@ -104,21 +110,29 @@ export default function App() {
 
   useEffect(() => {
 
-    if (xp >= 1000) setLevel(5);
+    if (xp >= 1000) {
+      setLevel(5);
+    }
 
-    else if (xp >= 700) setLevel(4);
+    else if (xp >= 700) {
+      setLevel(4);
+    }
 
-    else if (xp >= 400) setLevel(3);
+    else if (xp >= 400) {
+      setLevel(3);
+    }
 
-    else if (xp >= 200) setLevel(2);
+    else if (xp >= 200) {
+      setLevel(2);
+    }
 
   }, [xp]);
 
   // =========================
-  // ACHIEVEMENT SYSTEM
+  // ACHIEVEMENT POPUP
   // =========================
 
-  const unlockAchievement = (title) => {
+  const unlockAchievement = (title: string) => {
 
     setAchievements((prev) =>
       prev.map((item) =>
@@ -157,7 +171,7 @@ export default function App() {
       setRepoInitialized(true);
 
       response =
-        "✅ Repository initialized";
+        "✅ Initialized empty Git repository";
 
       setXP((prev) => prev + 50);
 
@@ -206,19 +220,19 @@ export default function App() {
             x: 100 + prev.length * 120,
             y:
               activeBranch === "main"
-                ? 150
-                : 320,
+                ? 170
+                : 340,
             branch: activeBranch,
-            message: `Commit ${prev.length}`,
             color:
               activeBranch === "main"
                 ? "bg-cyan-400"
                 : "bg-purple-500",
+            message: `Commit ${prev.length}`,
           },
         ]);
 
         unlockAchievement(
-          "First Commit"
+          "Create First Commit"
         );
       }
     }
@@ -244,7 +258,7 @@ export default function App() {
         setXP((prev) => prev + 150);
 
         unlockAchievement(
-          "Created Branch"
+          "Create Branch"
         );
 
       } else {
@@ -311,7 +325,7 @@ export default function App() {
       } else {
 
         response =
-          "✅ Feature merged successfully";
+          "✅ Feature branch merged successfully";
 
         setXP((prev) => prev + 300);
 
@@ -320,15 +334,15 @@ export default function App() {
           {
             id: prev.length + 1,
             x: 100 + prev.length * 120,
-            y: 150,
+            y: 170,
             branch: "main",
-            message: "Merge Commit",
             color: "bg-pink-500",
+            message: "Merge Commit",
           },
         ]);
 
         unlockAchievement(
-          "Merged Branch"
+          "Merge Branch"
         );
       }
     }
@@ -346,7 +360,9 @@ export default function App() {
 
       setXP((prev) => prev + 80);
 
-      unlockAchievement("Used Stash");
+      unlockAchievement(
+        "Use Git Stash"
+      );
     }
 
     // =====================
@@ -362,12 +378,12 @@ export default function App() {
         );
 
         response =
-          "✅ Last commit removed";
+          "✅ Removed last commit";
 
       } else {
 
         response =
-          "⚠️ Cannot reset initial commit";
+          "⚠️ Cannot remove initial commit";
       }
     }
 
@@ -443,7 +459,7 @@ export default function App() {
           GitVerse
         </h1>
 
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap">
 
           <div className="px-5 py-2 rounded-full bg-white/10">
             🌿
@@ -490,7 +506,7 @@ export default function App() {
               opacity: 1,
               y: 0,
             }}
-            className="text-8xl font-black leading-tight"
+            className="text-7xl md:text-8xl font-black leading-tight"
           >
             Learn Git <br />
             Like a
@@ -502,9 +518,10 @@ export default function App() {
 
           <p className="mt-8 text-xl text-gray-300 leading-10">
             Interactive Git gameplay with
-            visual commits, branches,
+            commits, branches,
             merge conflicts,
-            and missions.
+            stash, reset,
+            and real Git learning.
           </p>
 
         </div>
@@ -671,9 +688,9 @@ export default function App() {
 
               <line
                 x1="100"
-                y1="170"
+                y1="190"
                 x2="1600"
-                y2="170"
+                y2="190"
                 stroke="#22d3ee"
                 strokeWidth="4"
               />
@@ -682,18 +699,18 @@ export default function App() {
 
               <line
                 x1="220"
-                y1="170"
+                y1="190"
                 x2="220"
-                y2="340"
+                y2="360"
                 stroke="#a855f7"
                 strokeWidth="4"
               />
 
               <line
                 x1="220"
-                y1="340"
+                y1="360"
                 x2="1600"
-                y2="340"
+                y2="360"
                 stroke="#a855f7"
                 strokeWidth="4"
               />
@@ -729,8 +746,8 @@ export default function App() {
               animate={{
                 y:
                   activeBranch === "main"
-                    ? 150
-                    : 320,
+                    ? 170
+                    : 340,
               }}
               className="absolute right-20 w-20 h-20 rounded-full border-4 border-white flex items-center justify-center bg-black font-black"
             >
@@ -811,8 +828,7 @@ export default function App() {
 
             <p className="mt-6 text-gray-300 leading-8">
               Two branches modified the same
-              file.
-              Resolve conflict manually to continue.
+              file. Resolve conflict manually.
             </p>
 
             <button
