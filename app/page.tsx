@@ -1,35 +1,393 @@
-"use client";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+export default function App() {
 
-export default function Home() {
-
-  const [history, setHistory] = useState([
-    "Welcome to GitVerse Terminal 🚀",
-    "Type: git init",
-  ]);
+  // =========================
+  // TERMINAL
+  // =========================
 
   const [input, setInput] = useState("");
 
-  const commands: Record<string, string> = {
-    "git init": "✅ Initialized empty Git repository",
-    "git status": "✅ Working tree clean",
-    "git add .": "✅ Files added to staging area",
-    'git commit -m "first commit"':
-      "✅ First commit created successfully",
-    "git branch feature-login":
-      "✅ Created feature branch",
-    "git checkout feature-login":
-      "✅ Switched to feature-login",
+  const [history, setHistory] = useState([
+    "🚀 Welcome to GitVerse",
+    "Type git commands to play.",
+    "",
+    "Available Commands:",
+    "git init",
+    "git status",
+    "git commit",
+    "git branch feature",
+    "git checkout feature",
+    "git checkout main",
+    "git merge feature",
+    "git stash",
+    "git log",
+    "git reset",
+  ]);
+
+  // =========================
+  // GAME STATE
+  // =========================
+
+  const [repoInitialized, setRepoInitialized] =
+    useState(false);
+
+  const [xp, setXP] = useState(0);
+
+  const [level, setLevel] = useState(1);
+
+  const [streak, setStreak] = useState(0);
+
+  const [activeBranch, setActiveBranch] =
+    useState("main");
+
+  const [branches, setBranches] = useState([
+    "main",
+  ]);
+
+  const [stashCount, setStashCount] =
+    useState(0);
+
+  const [mergeConflict, setMergeConflict] =
+    useState(false);
+
+  const [showAchievement, setShowAchievement] =
+    useState("");
+
+  // =========================
+  // COMMITS
+  // =========================
+
+  const [commits, setCommits] = useState([
+    {
+      id: 1,
+      x: 100,
+      y: 150,
+      branch: "main",
+      message: "Initial Commit",
+      color: "bg-cyan-400",
+    },
+  ]);
+
+  // =========================
+  // ACHIEVEMENTS
+  // =========================
+
+  const [achievements, setAchievements] =
+    useState([
+      {
+        title: "Initialize Repository",
+        unlocked: false,
+      },
+      {
+        title: "First Commit",
+        unlocked: false,
+      },
+      {
+        title: "Created Branch",
+        unlocked: false,
+      },
+      {
+        title: "Merged Branch",
+        unlocked: false,
+      },
+      {
+        title: "Used Stash",
+        unlocked: false,
+      },
+    ]);
+
+  // =========================
+  // LEVEL SYSTEM
+  // =========================
+
+  useEffect(() => {
+
+    if (xp >= 1000) setLevel(5);
+
+    else if (xp >= 700) setLevel(4);
+
+    else if (xp >= 400) setLevel(3);
+
+    else if (xp >= 200) setLevel(2);
+
+  }, [xp]);
+
+  // =========================
+  // ACHIEVEMENT SYSTEM
+  // =========================
+
+  const unlockAchievement = (title) => {
+
+    setAchievements((prev) =>
+      prev.map((item) =>
+        item.title === title
+          ? {
+              ...item,
+              unlocked: true,
+            }
+          : item
+      )
+    );
+
+    setShowAchievement(title);
+
+    setTimeout(() => {
+      setShowAchievement("");
+    }, 3000);
   };
+
+  // =========================
+  // COMMAND ENGINE
+  // =========================
 
   const handleCommand = () => {
 
-    if (!input) return;
+    if (!input.trim()) return;
 
-    const response =
-      commands[input] || "❌ Unknown command";
+    let response = "❌ Unknown command";
+
+    // =====================
+    // git init
+    // =====================
+
+    if (input === "git init") {
+
+      setRepoInitialized(true);
+
+      response =
+        "✅ Repository initialized";
+
+      setXP((prev) => prev + 50);
+
+      setStreak((prev) => prev + 1);
+
+      unlockAchievement(
+        "Initialize Repository"
+      );
+    }
+
+    // =====================
+    // git status
+    // =====================
+
+    else if (input === "git status") {
+
+      response = repoInitialized
+        ? `✅ On branch ${activeBranch}`
+        : "❌ Repository not initialized";
+    }
+
+    // =====================
+    // git commit
+    // =====================
+
+    else if (input === "git commit") {
+
+      if (!repoInitialized) {
+
+        response =
+          "❌ Initialize repository first";
+
+      } else {
+
+        response =
+          `✅ Commit created on ${activeBranch}`;
+
+        setXP((prev) => prev + 100);
+
+        setStreak((prev) => prev + 1);
+
+        setCommits((prev) => [
+          ...prev,
+          {
+            id: prev.length + 1,
+            x: 100 + prev.length * 120,
+            y:
+              activeBranch === "main"
+                ? 150
+                : 320,
+            branch: activeBranch,
+            message: `Commit ${prev.length}`,
+            color:
+              activeBranch === "main"
+                ? "bg-cyan-400"
+                : "bg-purple-500",
+          },
+        ]);
+
+        unlockAchievement(
+          "First Commit"
+        );
+      }
+    }
+
+    // =====================
+    // git branch feature
+    // =====================
+
+    else if (
+      input === "git branch feature"
+    ) {
+
+      if (!branches.includes("feature")) {
+
+        setBranches((prev) => [
+          ...prev,
+          "feature",
+        ]);
+
+        response =
+          "✅ Feature branch created";
+
+        setXP((prev) => prev + 150);
+
+        unlockAchievement(
+          "Created Branch"
+        );
+
+      } else {
+
+        response =
+          "⚠️ Feature branch already exists";
+      }
+    }
+
+    // =====================
+    // git checkout feature
+    // =====================
+
+    else if (
+      input === "git checkout feature"
+    ) {
+
+      if (branches.includes("feature")) {
+
+        setActiveBranch("feature");
+
+        response =
+          "✅ Switched to feature branch";
+
+      } else {
+
+        response =
+          "❌ Feature branch not found";
+      }
+    }
+
+    // =====================
+    // git checkout main
+    // =====================
+
+    else if (
+      input === "git checkout main"
+    ) {
+
+      setActiveBranch("main");
+
+      response =
+        "✅ Switched to main branch";
+    }
+
+    // =====================
+    // git merge feature
+    // =====================
+
+    else if (
+      input === "git merge feature"
+    ) {
+
+      const randomConflict =
+        Math.random() > 0.5;
+
+      if (randomConflict) {
+
+        response =
+          "⚠️ Merge conflict detected";
+
+        setMergeConflict(true);
+
+      } else {
+
+        response =
+          "✅ Feature merged successfully";
+
+        setXP((prev) => prev + 300);
+
+        setCommits((prev) => [
+          ...prev,
+          {
+            id: prev.length + 1,
+            x: 100 + prev.length * 120,
+            y: 150,
+            branch: "main",
+            message: "Merge Commit",
+            color: "bg-pink-500",
+          },
+        ]);
+
+        unlockAchievement(
+          "Merged Branch"
+        );
+      }
+    }
+
+    // =====================
+    // git stash
+    // =====================
+
+    else if (input === "git stash") {
+
+      setStashCount((prev) => prev + 1);
+
+      response =
+        "✅ Changes stashed";
+
+      setXP((prev) => prev + 80);
+
+      unlockAchievement("Used Stash");
+    }
+
+    // =====================
+    // git reset
+    // =====================
+
+    else if (input === "git reset") {
+
+      if (commits.length > 1) {
+
+        setCommits((prev) =>
+          prev.slice(0, -1)
+        );
+
+        response =
+          "✅ Last commit removed";
+
+      } else {
+
+        response =
+          "⚠️ Cannot reset initial commit";
+      }
+    }
+
+    // =====================
+    // git log
+    // =====================
+
+    else if (input === "git log") {
+
+      response = commits
+        .map(
+          (commit) =>
+            `commit-${commit.id} (${commit.branch})`
+        )
+        .join(" | ");
+    }
+
+    // =====================
+    // UPDATE TERMINAL
+    // =====================
 
     setHistory((prev) => [
       ...prev,
@@ -40,163 +398,191 @@ export default function Home() {
     setInput("");
   };
 
-  const commits = [
-    { id: 1, x: 100, y: 120, color: "bg-cyan-400" },
-    { id: 2, x: 250, y: 120, color: "bg-cyan-400" },
-    { id: 3, x: 400, y: 120, color: "bg-cyan-400" },
-    { id: 4, x: 250, y: 250, color: "bg-purple-500" },
-    { id: 5, x: 400, y: 250, color: "bg-purple-500" },
-  ];
-
-  const missions = [
-    {
-      title: "Initialize Repository",
-      xp: "+50 XP",
-      status: "Completed",
-    },
-    {
-      title: "Create First Commit",
-      xp: "+100 XP",
-      status: "Completed",
-    },
-    {
-      title: "Create Feature Branch",
-      xp: "+150 XP",
-      status: "In Progress",
-    },
-    {
-      title: "Merge Branches",
-      xp: "+250 XP",
-      status: "Locked",
-    },
-  ];
-
   return (
     <main className="min-h-screen bg-black text-white overflow-hidden relative">
 
-      {/* Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,#1e3a8a,transparent_30%),radial-gradient(circle_at_bottom_right,#7e22ce,transparent_30%)] opacity-40"></div>
+      {/* BACKGROUND */}
 
-      {/* Navbar */}
-      <nav className="flex justify-between items-center px-10 py-6 relative z-10">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,#0f172a,transparent_25%),radial-gradient(circle_at_bottom_right,#6d28d9,transparent_25%)]"></div>
 
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+      {/* ACHIEVEMENT POPUP */}
+
+      <AnimatePresence>
+
+        {showAchievement && (
+
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: -100,
+            }}
+            animate={{
+              opacity: 1,
+              y: 20,
+            }}
+            exit={{
+              opacity: 0,
+              y: -100,
+            }}
+            className="fixed top-5 right-5 z-50 bg-cyan-400 text-black px-8 py-4 rounded-2xl font-bold shadow-[0_0_40px_#22d3ee]"
+          >
+            🏆 Achievement:
+            {" "}
+            {showAchievement}
+          </motion.div>
+
+        )}
+
+      </AnimatePresence>
+
+      {/* NAVBAR */}
+
+      <nav className="relative z-10 flex justify-between items-center px-10 py-6">
+
+        <h1 className="text-5xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
           GitVerse
         </h1>
 
-        <button className="px-5 py-2 rounded-full bg-cyan-400 text-black font-semibold hover:scale-105 transition">
-          Start Learning
-        </button>
+        <div className="flex gap-4">
 
-      </nav>
+          <div className="px-5 py-2 rounded-full bg-white/10">
+            🌿
+            {" "}
+            {activeBranch}
+          </div>
 
-      {/* Hero */}
-      <section className="grid md:grid-cols-2 gap-10 items-center px-10 py-20 relative z-10">
+          <div className="px-5 py-2 rounded-full bg-white/10">
+            ⚡
+            {" "}
+            {xp}
+            {" "}
+            XP
+          </div>
 
-        {/* Left */}
-        <div>
+          <div className="px-5 py-2 rounded-full bg-white/10">
+            🔥
+            {" "}
+            {streak}
+          </div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-            className="text-6xl md:text-7xl font-extrabold leading-tight"
-          >
-            Learn Git <br />
-            Like a <span className="text-cyan-400">Game</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="mt-6 text-gray-300 text-lg leading-8"
-          >
-            Master Git visually through futuristic gameplay,
-            cinematic animations, and interactive missions.
-          </motion.p>
-
-          <div className="mt-10 flex gap-5">
-
-            <button className="px-8 py-4 rounded-2xl bg-cyan-400 text-black font-bold hover:scale-105 transition">
-              Play Now
-            </button>
-
-            <button className="px-8 py-4 rounded-2xl border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black transition">
-              Watch Demo
-            </button>
-
+          <div className="px-5 py-2 rounded-full bg-white/10">
+            📦
+            {" "}
+            {stashCount}
           </div>
 
         </div>
 
-        {/* Right */}
+      </nav>
+
+      {/* HERO */}
+
+      <section className="relative z-10 grid md:grid-cols-2 gap-10 items-center px-10 py-20">
+
+        <div>
+
+          <motion.h1
+            initial={{
+              opacity: 0,
+              y: 50,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            className="text-8xl font-black leading-tight"
+          >
+            Learn Git <br />
+            Like a
+            {" "}
+            <span className="text-cyan-400">
+              Game
+            </span>
+          </motion.h1>
+
+          <p className="mt-8 text-xl text-gray-300 leading-10">
+            Interactive Git gameplay with
+            visual commits, branches,
+            merge conflicts,
+            and missions.
+          </p>
+
+        </div>
+
+        {/* PLANET */}
+
         <motion.div
-          animate={{ rotate: 360 }}
+          animate={{
+            rotate: 360,
+          }}
           transition={{
             repeat: Infinity,
-            duration: 20,
+            duration: 30,
             ease: "linear",
           }}
           className="relative flex justify-center items-center"
         >
 
-          <div className="w-[400px] h-[400px] rounded-full border border-cyan-400/30 absolute"></div>
+          <div className="absolute w-[450px] h-[450px] rounded-full border border-cyan-400/20"></div>
 
-          <div className="w-[300px] h-[300px] rounded-full border border-purple-500/30 absolute"></div>
+          <div className="absolute w-[320px] h-[320px] rounded-full border border-purple-500/20"></div>
 
-          <div className="w-40 h-40 rounded-full bg-gradient-to-r from-cyan-400 to-purple-600 shadow-[0_0_80px_#22d3ee] flex items-center justify-center text-5xl font-bold">
+          <div className="w-44 h-44 rounded-full bg-gradient-to-r from-cyan-400 to-purple-600 shadow-[0_0_120px_#22d3ee] flex items-center justify-center text-6xl font-black">
             Git
           </div>
-
-          <div className="absolute top-10 left-10 w-5 h-5 rounded-full bg-cyan-400 shadow-[0_0_20px_#22d3ee]"></div>
-
-          <div className="absolute bottom-20 right-10 w-6 h-6 rounded-full bg-purple-500 shadow-[0_0_20px_#a855f7]"></div>
-
-          <div className="absolute top-32 right-0 w-4 h-4 rounded-full bg-pink-500 shadow-[0_0_20px_#ec4899]"></div>
 
         </motion.div>
 
       </section>
 
-      {/* XP CARD */}
+      {/* XP PANEL */}
+
       <section className="relative z-10 px-10">
 
-        <div className="w-full max-w-6xl mx-auto p-8 rounded-3xl bg-white/5 border border-cyan-500/20 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto p-8 rounded-3xl bg-white/5 border border-cyan-500/20 backdrop-blur-xl">
 
           <div className="flex justify-between items-center">
 
             <div>
-              <h2 className="text-4xl font-bold text-cyan-400">
-                Git Explorer
+
+              <h2 className="text-5xl font-black text-cyan-400">
+                Level
+                {" "}
+                {level}
               </h2>
 
-              <p className="text-gray-400 mt-2">
-                Level 1 Developer
+              <p className="text-gray-400 mt-4">
+                Git Progression System
               </p>
+
             </div>
 
             <div className="text-right">
 
-              <p className="text-5xl font-extrabold">
-                120 XP
+              <p className="text-6xl font-black">
+                {xp}
               </p>
 
               <p className="text-gray-500">
-                Next Level: 250 XP
+                XP
               </p>
 
             </div>
 
           </div>
 
-          <div className="mt-8 w-full h-5 rounded-full bg-white/10 overflow-hidden">
+          {/* XP BAR */}
+
+          <div className="mt-10 w-full h-6 rounded-full bg-white/10 overflow-hidden">
 
             <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: "48%" }}
-              transition={{ duration: 2 }}
-              className="h-full bg-gradient-to-r from-cyan-400 to-purple-500"
+              animate={{
+                width: `${Math.min(
+                  xp / 10,
+                  100
+                )}%`,
+              }}
+              className="h-full bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500"
             />
 
           </div>
@@ -206,35 +592,48 @@ export default function Home() {
       </section>
 
       {/* TERMINAL */}
+
       <section className="relative z-10 px-10 py-20">
 
-        <div className="w-full max-w-6xl mx-auto rounded-3xl overflow-hidden border border-cyan-500/30 bg-black/60 backdrop-blur-xl shadow-[0_0_60px_rgba(34,211,238,0.2)]">
+        <div className="max-w-7xl mx-auto rounded-3xl overflow-hidden border border-cyan-500/30 bg-black/60 backdrop-blur-xl">
 
-          <div className="flex items-center gap-3 px-5 py-4 bg-white/5 border-b border-white/10">
+          {/* TOP */}
+
+          <div className="flex items-center gap-3 px-6 py-5 bg-white/5 border-b border-white/10">
 
             <div className="w-3 h-3 rounded-full bg-red-500"></div>
+
             <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+
             <div className="w-3 h-3 rounded-full bg-green-500"></div>
 
-            <p className="ml-4 text-sm text-gray-400">
+            <p className="ml-5 text-gray-400">
               GitVerse Terminal
             </p>
 
           </div>
 
-          <div className="p-6 h-[400px] overflow-y-auto font-mono text-sm text-green-400 space-y-2">
+          {/* CONTENT */}
+
+          <div className="p-6 h-[450px] overflow-y-auto font-mono text-sm text-green-400 space-y-3">
 
             {history.map((line, index) => (
-              <p key={index}>{line}</p>
+              <p key={index}>
+                {line}
+              </p>
             ))}
 
-            <div className="flex items-center gap-2 mt-4">
+            <div className="flex items-center gap-3">
 
-              <span className="text-cyan-400">$</span>
+              <span className="text-cyan-400">
+                $
+              </span>
 
               <input
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) =>
+                  setInput(e.target.value)
+                }
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     handleCommand();
@@ -253,70 +652,90 @@ export default function Home() {
       </section>
 
       {/* GIT GRAPH */}
+
       <section className="relative z-10 px-10">
 
-        <div className="w-full max-w-6xl mx-auto rounded-3xl bg-black/40 border border-cyan-500/20 backdrop-blur-xl overflow-hidden relative p-10">
+        <div className="max-w-7xl mx-auto rounded-3xl bg-white/5 border border-cyan-500/20 p-10 backdrop-blur-xl">
 
-          <div className="mb-10">
-            <h2 className="text-4xl font-bold text-cyan-400">
-              Git Branch Visualization
-            </h2>
+          <h2 className="text-5xl font-black text-cyan-400 mb-10">
+            Git Graph
+          </h2>
 
-            <p className="text-gray-400 mt-3">
-              Learn branching visually through animated commit graphs.
-            </p>
-          </div>
+          <div className="relative h-[500px] overflow-hidden">
 
-          <div className="relative h-[400px]">
+            {/* LINES */}
 
             <svg className="absolute inset-0 w-full h-full">
 
+              {/* MAIN */}
+
               <line
                 x1="100"
-                y1="140"
-                x2="400"
-                y2="140"
+                y1="170"
+                x2="1600"
+                y2="170"
                 stroke="#22d3ee"
                 strokeWidth="4"
               />
 
+              {/* FEATURE */}
+
               <line
-                x1="250"
-                y1="140"
-                x2="250"
-                y2="270"
+                x1="220"
+                y1="170"
+                x2="220"
+                y2="340"
                 stroke="#a855f7"
                 strokeWidth="4"
               />
 
               <line
-                x1="250"
-                y1="270"
-                x2="400"
-                y2="270"
+                x1="220"
+                y1="340"
+                x2="1600"
+                y2="340"
                 stroke="#a855f7"
                 strokeWidth="4"
               />
 
             </svg>
 
+            {/* COMMITS */}
+
             {commits.map((commit) => (
 
               <motion.div
                 key={commit.id}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{
-                  delay: commit.id * 0.2,
+                initial={{
+                  scale: 0,
                 }}
-                className={`absolute w-12 h-12 rounded-full ${commit.color} shadow-[0_0_30px_currentColor]`}
+                animate={{
+                  scale: 1,
+                }}
+                className={`absolute w-14 h-14 rounded-full ${commit.color} shadow-[0_0_40px_currentColor] flex items-center justify-center text-black font-black`}
                 style={{
                   left: commit.x,
                   top: commit.y,
                 }}
-              />
+              >
+                {commit.id}
+              </motion.div>
 
             ))}
+
+            {/* HEAD */}
+
+            <motion.div
+              animate={{
+                y:
+                  activeBranch === "main"
+                    ? 150
+                    : 320,
+              }}
+              className="absolute right-20 w-20 h-20 rounded-full border-4 border-white flex items-center justify-center bg-black font-black"
+            >
+              HEAD
+            </motion.div>
 
           </div>
 
@@ -325,70 +744,91 @@ export default function Home() {
       </section>
 
       {/* MISSIONS */}
+
       <section className="relative z-10 px-10 py-20">
 
-        <div className="w-full max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
 
-          <div className="mb-10">
-
-            <h2 className="text-5xl font-extrabold text-cyan-400">
-              Missions
-            </h2>
-
-            <p className="text-gray-400 mt-4 text-lg">
-              Complete Git missions and level up.
-            </p>
-
-          </div>
+          <h2 className="text-6xl font-black text-cyan-400 mb-12">
+            Missions
+          </h2>
 
           <div className="grid md:grid-cols-2 gap-8">
 
-            {missions.map((mission, index) => (
+            {achievements.map(
+              (achievement, index) => (
 
-              <motion.div
-                key={index}
-                whileHover={{ scale: 1.03 }}
-                className="p-8 rounded-3xl bg-white/5 border border-cyan-500/20 backdrop-blur-xl"
-              >
+                <motion.div
+                  key={index}
+                  whileHover={{
+                    scale: 1.03,
+                  }}
+                  className="p-8 rounded-3xl bg-white/5 border border-cyan-500/20"
+                >
 
-                <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center">
 
-                  <div>
-
-                    <h3 className="text-2xl font-bold text-white">
-                      {mission.title}
+                    <h3 className="text-3xl font-black">
+                      {achievement.title}
                     </h3>
 
-                    <p className="text-cyan-400 mt-3">
-                      Reward: {mission.xp}
-                    </p>
+                    <span
+                      className={`px-5 py-3 rounded-full font-bold ${
+                        achievement.unlocked
+                          ? "bg-green-500/20 text-green-400"
+                          : "bg-yellow-500/20 text-yellow-400"
+                      }`}
+                    >
+                      {achievement.unlocked
+                        ? "Completed"
+                        : "Pending"}
+                    </span>
 
                   </div>
 
-                  <span
-                    className={`px-4 py-2 rounded-full text-sm font-bold
-                    ${
-                      mission.status === "Completed"
-                        ? "bg-green-500/20 text-green-400"
-                        : mission.status === "In Progress"
-                        ? "bg-yellow-500/20 text-yellow-400"
-                        : "bg-gray-500/20 text-gray-400"
-                    }`}
-                  >
-                    {mission.status}
-                  </span>
+                </motion.div>
 
-                </div>
-
-              </motion.div>
-
-            ))}
+              )
+            )}
 
           </div>
 
         </div>
 
       </section>
+
+      {/* MERGE CONFLICT */}
+
+      {mergeConflict && (
+
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xl flex items-center justify-center z-50">
+
+          <div className="bg-[#111] border border-red-500/30 p-10 rounded-3xl max-w-lg">
+
+            <h2 className="text-4xl font-black text-red-400">
+              ⚠️ Merge Conflict
+            </h2>
+
+            <p className="mt-6 text-gray-300 leading-8">
+              Two branches modified the same
+              file.
+              Resolve conflict manually to continue.
+            </p>
+
+            <button
+              onClick={() =>
+                setMergeConflict(false)
+              }
+              className="mt-8 px-8 py-4 rounded-2xl bg-red-500 text-white font-bold"
+            >
+              Resolve Conflict
+            </button>
+
+          </div>
+
+        </div>
+
+      )}
 
     </main>
   );
